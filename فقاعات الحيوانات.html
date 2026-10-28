@@ -1,0 +1,452 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>فقاعات الحيوانات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@600;800&display=swap">
+<style>
+/* Layout: one rounded sky card fills the screen. Bubbles rise inside it, a tap pops one and the animal appears large in the middle. A sticker shelf at the bottom fills up as animals are found. Single bright look by choice, so no dark variant. */
+:root {
+  --page: #bfe6fb;
+  --sky-top: #7ecbff;
+  --sky-bottom: #eaf8ff;
+  --ink: #1d3a5c;
+  --sun: #ffd54a;
+  --sun-edge: #f0a800;
+  --paper: rgba(255, 255, 255, 0.82);
+  --cloud: rgba(255, 255, 255, 0.85);
+  --font-display: 'Baloo Bhaijaan 2', 'Segoe UI', Tahoma, 'Noto Naskh Arabic', sans-serif;
+  --font-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+html, body { height: 100%; }
+body {
+  box-sizing: border-box;
+  display: flex;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--font-display);
+  padding-block: 12px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 4px solid var(--ink); outline-offset: 3px; }
+
+#sky {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 28px;
+  background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 100%);
+  box-shadow: 0 6px 0 rgba(29, 58, 92, 0.12);
+}
+
+.cloud {
+  position: absolute;
+  height: 54px;
+  border-radius: 999px;
+  background: var(--cloud);
+  filter: blur(1px);
+  animation: drift 60s linear infinite;
+}
+.cloud::before, .cloud::after {
+  content: "";
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+}
+.cloud::before { width: 60px; height: 60px; left: 22%; top: -26px; }
+.cloud::after { width: 44px; height: 44px; left: 52%; top: -18px; }
+.cloud.c1 { width: 150px; top: 12%; animation-duration: 70s; }
+.cloud.c2 { width: 110px; top: 38%; animation-duration: 95s; animation-delay: -40s; opacity: 0.8; }
+.cloud.c3 { width: 130px; top: 62%; animation-duration: 80s; animation-delay: -15s; opacity: 0.7; }
+@keyframes drift { from { transform: translateX(-220px); } to { transform: translateX(110vw); } }
+
+#layer { position: absolute; inset: 0; }
+
+.bubble {
+  position: absolute;
+  left: 0; top: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  border: 3px solid hsla(var(--h), 90%, 97%, 0.95);
+  background:
+    radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.95) 0 7%, transparent 8%),
+    radial-gradient(circle at 50% 55%, hsla(var(--h), 90%, 88%, 0.35), hsla(var(--h), 85%, 68%, 0.6));
+  box-shadow: inset -6px -8px 14px hsla(var(--h), 90%, 60%, 0.25), 0 4px 10px rgba(29, 58, 92, 0.12);
+  will-change: transform;
+}
+.bubble span {
+  font-family: var(--font-emoji);
+  line-height: 1;
+  animation: bob 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes bob { 0%, 100% { transform: translateY(2px) rotate(-4deg); } 50% { transform: translateY(-4px) rotate(4deg); } }
+
+.fx { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 4; }
+.dot { width: 14px; height: 14px; border-radius: 50%; margin: -7px 0 0 -7px; }
+.ring { width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; border: 4px solid rgba(255, 255, 255, 0.95); }
+.star { font-family: var(--font-emoji); font-size: 28px; margin: -14px 0 0 -14px; }
+
+#reveal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 5;
+}
+#revCard {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  opacity: 0;
+}
+#revEmoji {
+  font-family: var(--font-emoji);
+  font-size: clamp(110px, 38vmin, 220px);
+  line-height: 1;
+  filter: drop-shadow(0 8px 0 rgba(29, 58, 92, 0.14));
+}
+#revLabel {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  padding: 6px 22px 2px;
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: 0 4px 0 rgba(29, 58, 92, 0.12);
+}
+#revName { font-size: clamp(26px, 7vmin, 40px); font-weight: 800; }
+#revSound { font-size: clamp(20px, 5vmin, 30px); font-weight: 600; color: var(--sun-edge); }
+
+#shelf {
+  position: absolute;
+  left: 10px; right: 10px; bottom: 10px;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  max-width: 300px;
+  margin-inline: auto;
+  padding: 6px 8px;
+  border-radius: 22px;
+  background: var(--paper);
+  pointer-events: none;
+}
+@media (min-width: 700px) {
+  #shelf { grid-template-columns: repeat(10, 1fr); max-width: 520px; }
+}
+.slot {
+  font-family: var(--font-emoji);
+  font-size: 28px;
+  line-height: 1.25;
+  text-align: center;
+  filter: brightness(0) opacity(0.18);
+  transition: filter 0.3s;
+}
+.slot.found { filter: none; animation: stick 0.5s ease-out; }
+@keyframes stick { 0% { transform: scale(0.3); } 60% { transform: scale(1.4); } 100% { transform: scale(1); } }
+
+#soundBtn {
+  position: absolute;
+  top: 12px; left: 12px;
+  z-index: 8;
+  width: 52px; height: 52px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  border: 0;
+  background: var(--paper);
+  box-shadow: 0 4px 0 rgba(29, 58, 92, 0.14);
+}
+#soundBtn svg { width: 26px; height: 26px; fill: none; stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+#soundBtn .off { display: none; }
+#soundBtn.muted .on { display: none; }
+#soundBtn.muted .off { display: block; }
+
+#intro {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 16px;
+  background: rgba(126, 203, 255, 0.55);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  text-align: center;
+}
+#intro h1 {
+  margin: 0;
+  font-size: clamp(40px, 11vw, 72px);
+  font-weight: 800;
+  line-height: 1.1;
+  text-wrap: balance;
+  text-shadow: 0 4px 0 rgba(255, 255, 255, 0.7);
+}
+#startBtn {
+  width: 132px; height: 132px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border-radius: 50%;
+  border: 0;
+  background: var(--sun);
+  box-shadow: 0 8px 0 var(--sun-edge);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+#startBtn:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--sun-edge); }
+#startBtn svg { width: 60px; height: 60px; fill: var(--ink); margin-left: -6px; }
+@keyframes pulse { 0%, 100% { scale: 1; } 50% { scale: 1.07; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cloud, .bubble span, #startBtn { animation: none; }
+}
+</style>
+
+<main id="sky" dir="rtl">
+  <div class="cloud c1"></div>
+  <div class="cloud c2"></div>
+  <div class="cloud c3"></div>
+
+  <div id="layer"></div>
+
+  <div id="reveal" aria-live="polite">
+    <div id="revCard">
+      <div id="revEmoji"></div>
+      <div id="revLabel"><span id="revName"></span><span id="revSound"></span></div>
+    </div>
+  </div>
+
+  <div id="shelf" aria-hidden="true"></div>
+
+  <button id="soundBtn" type="button" aria-label="الصوت">
+    <svg class="on" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+    <svg class="off" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6"/><path d="M22 9l-5 6"/></svg>
+  </button>
+
+  <div id="intro">
+    <h1>فقاعات الحيوانات</h1>
+    <button id="startBtn" type="button" aria-label="ابدأ اللعب">
+      <svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>
+    </button>
+  </div>
+</main>
+
+<script>
+(function () {
+  var ANIMALS = [
+    { e: '🐮', n: 'البقرة', s: 'موو', k: 'cow' },
+    { e: '🐱', n: 'القطة', s: 'مياو', k: 'cat' },
+    { e: '🐶', n: 'الكلب', s: 'هو هو', k: 'dog' },
+    { e: '🦆', n: 'البطة', s: 'بق بق', k: 'duck' },
+    { e: '🐑', n: 'الخروف', s: 'ماع', k: 'sheep' },
+    { e: '🦁', n: 'الأسد', s: 'غرررر', k: 'lion' },
+    { e: '🐸', n: 'الضفدع', s: 'نق نق', k: 'frog' },
+    { e: '🐥', n: 'الكتكوت', s: 'صيص', k: 'chick' },
+    { e: '🐷', n: 'الخنزير', s: 'غرنت', k: 'pig' },
+    { e: '🐴', n: 'الحصان', s: 'ييهه', k: 'horse' }
+  ];
+  var HUES = [195, 330, 48, 140, 270, 20, 210];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var sky = $('sky'), layer = $('layer'), shelf = $('shelf');
+  var intro = $('intro'), startBtn = $('startBtn'), soundBtn = $('soundBtn');
+  var revCard = $('revCard'), revEmoji = $('revEmoji'), revName = $('revName'), revSound = $('revSound');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var rand = function (a, b) { return a + Math.random() * (b - a); };
+
+  /* ---------- sound (synthesized placeholders; real recordings can replace these later) ---------- */
+  var ctx = null, muted = false;
+  function tone(o) {
+    if (!ctx || muted) return;
+    var st = ctx.currentTime + (o.t || 0), d = o.d || 0.3, v = o.v == null ? 0.25 : o.v;
+    var osc = ctx.createOscillator(), g = ctx.createGain(), out = g;
+    osc.type = o.type || 'sine';
+    osc.frequency.setValueAtTime(o.f0, st);
+    osc.frequency.exponentialRampToValueAtTime(o.f1 || o.f0, st + d);
+    if (o.vib) {
+      var l = ctx.createOscillator(), lg = ctx.createGain();
+      l.frequency.value = o.vib; lg.gain.value = o.f0 * 0.06;
+      l.connect(lg); lg.connect(osc.frequency); l.start(st); l.stop(st + d + 0.05);
+    }
+    g.gain.setValueAtTime(0.0001, st);
+    g.gain.linearRampToValueAtTime(v, st + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, st + d);
+    if (o.lp) {
+      var f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = o.lp;
+      osc.connect(f); f.connect(g);
+    } else { osc.connect(g); }
+    out.connect(ctx.destination);
+    osc.start(st); osc.stop(st + d + 0.05);
+  }
+  var SOUNDS = {
+    cow:   function () { tone({ f0: 150, f1: 110, d: 0.9, type: 'sawtooth', lp: 600, v: 0.3, vib: 6 }); },
+    cat:   function () { tone({ f0: 500, f1: 900, d: 0.25, type: 'triangle' }); tone({ f0: 900, f1: 450, d: 0.4, type: 'triangle', t: 0.25 }); },
+    dog:   function () { tone({ f0: 350, f1: 200, d: 0.15, type: 'sawtooth', lp: 1200 }); tone({ f0: 350, f1: 200, d: 0.15, type: 'sawtooth', lp: 1200, t: 0.24 }); },
+    duck:  function () { tone({ f0: 600, f1: 380, d: 0.18, type: 'square', lp: 1500, v: 0.15 }); tone({ f0: 600, f1: 380, d: 0.18, type: 'square', lp: 1500, v: 0.15, t: 0.26 }); },
+    sheep: function () { tone({ f0: 420, f1: 380, d: 0.8, type: 'sawtooth', lp: 1400, vib: 28, v: 0.2 }); },
+    lion:  function () { tone({ f0: 90, f1: 60, d: 1.1, type: 'sawtooth', lp: 500, vib: 18, v: 0.4 }); },
+    frog:  function () { for (var i = 0; i < 3; i++) tone({ f0: 220, f1: 180, d: 0.1, type: 'square', lp: 700, v: 0.15, t: i * 0.15 }); },
+    chick: function () { for (var i = 0; i < 4; i++) tone({ f0: 1500, f1: 1900, d: 0.08, v: 0.15, t: i * 0.12 }); },
+    pig:   function () { tone({ f0: 260, f1: 150, d: 0.2, type: 'sawtooth', lp: 900 }); tone({ f0: 260, f1: 150, d: 0.2, type: 'sawtooth', lp: 900, t: 0.26 }); },
+    horse: function () { tone({ f0: 800, f1: 500, d: 0.9, type: 'sawtooth', lp: 1800, vib: 14, v: 0.18 }); }
+  };
+  function popSound() { tone({ f0: 900, f1: 250, d: 0.12, v: 0.3 }); }
+  function cheer() { [523, 659, 784, 1047].forEach(function (f, i) { tone({ f0: f, f1: f, d: 0.25, type: 'triangle', v: 0.2, t: i * 0.12 }); }); }
+
+  /* ---------- shelf ---------- */
+  var slots = ANIMALS.map(function (a) {
+    var s = document.createElement('div'); s.className = 'slot'; s.textContent = a.e; shelf.appendChild(s); return s;
+  });
+  var found = new Set();
+
+  /* ---------- bubbles ---------- */
+  var W = 0, H = 0;
+  function measure() { W = sky.clientWidth; H = sky.clientHeight; }
+  measure();
+  if (window.ResizeObserver) new ResizeObserver(measure).observe(sky);
+
+  var bubbles = new Set();
+  var target = function () { return W < 520 ? 6 : 9; };
+
+  function pickAnimal() {
+    var used = new Set(); bubbles.forEach(function (b) { used.add(b.a); });
+    var pool = ANIMALS.filter(function (a) { return !used.has(a); });
+    if (!pool.length) pool = ANIMALS;
+    return pool[(Math.random() * pool.length) | 0];
+  }
+  function setAnimal(b, a) { b.a = a; b.icon.textContent = a.e; b.el.setAttribute('aria-label', a.n); }
+
+  function spawn(initial) {
+    var size = Math.round(Math.min(rand(92, 136), Math.max(76, W * 0.32)));
+    var el = document.createElement('button'); el.type = 'button'; el.className = 'bubble';
+    var icon = document.createElement('span'); el.appendChild(icon);
+    el.style.width = el.style.height = size + 'px';
+    el.style.setProperty('--h', HUES[(Math.random() * HUES.length) | 0]);
+    icon.style.fontSize = Math.round(size * 0.52) + 'px';
+    var b = {
+      el: el, icon: icon, size: size,
+      x: rand(4, Math.max(5, W - size - 4)),
+      y: initial ? rand(40, Math.max(60, H - size - 60)) : H + rand(10, size),
+      vy: rand(24, 50), ph: rand(0, 6.28), amp: rand(8, 20), dead: false, cx: 0, cy: 0
+    };
+    setAnimal(b, pickAnimal());
+    el.addEventListener('pointerdown', function (e) { e.preventDefault(); pop(b); });
+    layer.appendChild(el); bubbles.add(b);
+    return b;
+  }
+
+  var last = performance.now(), lastSpawn = 0;
+  function frame(now) {
+    var dt = Math.min(0.05, (now - last) / 1000); last = now;
+    var k = reduce ? 0.5 : 1;
+    bubbles.forEach(function (b) {
+      b.y -= b.vy * dt * k;
+      var x = b.x + (reduce ? 0 : Math.sin(now / 1000 * 0.9 + b.ph) * b.amp);
+      b.cx = x + b.size / 2; b.cy = b.y + b.size / 2;
+      b.el.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + b.y.toFixed(1) + 'px,0)';
+      if (b.y < -b.size - 10) {
+        b.y = H + rand(10, b.size); b.x = rand(4, Math.max(5, W - b.size - 4));
+        setAnimal(b, pickAnimal());
+      }
+    });
+    if (bubbles.size < target() && now - lastSpawn > 700) { spawn(false); lastSpawn = now; }
+    requestAnimationFrame(frame);
+  }
+
+  /* ---------- effects ---------- */
+  function burst(cx, cy, n, makeEl, dist) {
+    for (var i = 0; i < n; i++) {
+      var p = makeEl(); p.classList.add('fx');
+      p.style.left = cx + 'px'; p.style.top = cy + 'px';
+      sky.appendChild(p);
+      var ang = (i / n) * Math.PI * 2 + rand(-0.2, 0.2), r = rand(dist * 0.6, dist);
+      var anim = p.animate([
+        { transform: 'translate(0,0) scale(1)', opacity: 1 },
+        { transform: 'translate(' + Math.cos(ang) * r + 'px,' + Math.sin(ang) * r + 'px) scale(0.2)', opacity: 0 }
+      ], { duration: rand(500, 800), easing: 'cubic-bezier(.2,.7,.3,1)' });
+      anim.onfinish = (function (el) { return function () { el.remove(); }; })(p);
+    }
+  }
+  function dotEl() {
+    var d = document.createElement('div'); d.className = 'dot';
+    d.style.background = 'hsl(' + ((Math.random() * 360) | 0) + ' 90% 65%)'; return d;
+  }
+  function starEl() { var s = document.createElement('div'); s.className = 'star'; s.textContent = '⭐'; return s; }
+
+  function reveal(a) {
+    revEmoji.textContent = a.e; revName.textContent = a.n; revSound.textContent = a.s;
+    revCard.getAnimations().forEach(function (x) { x.cancel(); });
+    revCard.animate([
+      { opacity: 0, transform: 'scale(0.2) rotate(-12deg)' },
+      { opacity: 1, transform: 'scale(1.15) rotate(6deg)', offset: 0.22 },
+      { transform: 'scale(1) rotate(-5deg)', offset: 0.4 },
+      { transform: 'scale(1.06) rotate(5deg)', offset: 0.6 },
+      { opacity: 1, transform: 'scale(1) rotate(0deg)', offset: 0.82 },
+      { opacity: 0, transform: 'scale(0.9) rotate(0deg)' }
+    ], { duration: 2000, easing: 'ease-out', fill: 'both' });
+  }
+
+  function pop(b) {
+    if (b.dead || !ctx && intro.hidden === false) return;
+    b.dead = true; bubbles.delete(b);
+    var cx = b.cx, cy = b.cy, a = b.a;
+    b.el.remove();
+    burst(cx, cy, 12, dotEl, 90);
+    burst(cx, cy, 1, function () { var r = document.createElement('div'); r.className = 'ring'; return r; }, 0.01);
+    popSound();
+    setTimeout(function () { var s = SOUNDS[a.k]; if (s) s(); }, 90);
+    reveal(a);
+
+    var i = ANIMALS.indexOf(a);
+    if (!found.has(i)) {
+      found.add(i);
+      slots[i].classList.add('found');
+      if (found.size === ANIMALS.length) {
+        setTimeout(function () {
+          cheer();
+          burst(W / 2, H / 2, 24, starEl, Math.min(W, H) * 0.5);
+        }, 900);
+        setTimeout(function () {
+          found.clear();
+          slots.forEach(function (s) { s.classList.remove('found'); });
+        }, 3600);
+      }
+    }
+  }
+
+  /* ---------- controls ---------- */
+  startBtn.addEventListener('click', function () {
+    try {
+      var AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) { ctx = new AC(); if (ctx.resume) ctx.resume(); }
+    } catch (e) { ctx = null; }
+    intro.hidden = true;
+    popSound();
+  });
+  soundBtn.addEventListener('click', function () {
+    muted = !muted;
+    soundBtn.classList.toggle('muted', muted);
+  });
+
+  /* ---------- boot: bubbles are already drifting behind the start screen ---------- */
+  for (var n = 0; n < target(); n++) spawn(true);
+  requestAnimationFrame(function (t) { last = t; requestAnimationFrame(frame); });
+})();
+</script>
+
+</body></html>
